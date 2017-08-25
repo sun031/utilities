@@ -134,7 +134,7 @@ def interp3(points, values, lon, lat, dep):
     val = my_interp3d(pt)
     return val[0]
 
-def constuct_1D_data_from_3D(coors, file3d, path1d=".", depmin=5, depmax=300, depint=5, suffix=".vp"):
+def constuct_1D_data_from_3D(coors, file3d, savepath=".", depmin=5, depmax=300, depint=5, suffix=".vp"):
     """
     Construct 1-D data (e.g., 1-D velocity profile along depth) from a 3-D data cube
 
@@ -148,7 +148,7 @@ def constuct_1D_data_from_3D(coors, file3d, path1d=".", depmin=5, depmax=300, de
     file3d: string
         file name of 3D datacube in xyzv format
 
-    path1d : string
+    savepath : string
         path to save constructed 1-D data
         default is "."
 
@@ -183,7 +183,7 @@ def constuct_1D_data_from_3D(coors, file3d, path1d=".", depmin=5, depmax=300, de
         stla = line[2]
         print id
 
-        fn = path1d + "/" + id + suffix
+        fn = savepath + "/" + id + suffix
         fp = open(fn, "w")
         for depth in np.arange(depmin, depmax, depint):
             val = interp3(points=points, values=values, lon=stlo, lat=stla, dep=depth)
@@ -217,9 +217,38 @@ def get_stid_sac(file):
 
     stlo = header["stlo"]
     stla = header["stla"]
-
-    return [stid, stlo, stla]
-
+    stel = header["stel"]
 
 
+    return [stid, stlo, stla, stel]
 
+
+def construct_2d_topo(coors, xyzfile, savepath=".", suffix=".moho"):
+
+    try:
+        os.makedirs(path1d)
+    except:
+        pass
+
+    points, values = read_xyz(file=xyzfile)
+
+    for line in coors:
+        id = line[0]
+        stlo = line[1]
+        stla = line[2]
+        print id
+
+        fn = savepath + "/" + id + suffix
+        fp = open(fn, "w")
+        val = interp2(points=points, values=values, lon=stlo, lat=stla, method="linear")
+        fp.write("%s\t%f\t%f\t%f\n" % (id, stlo, stla, val))
+        fp.close()
+
+    pass
+
+
+def stid_from_trid(trid):
+
+    a = trid.split(".")
+    b = ".".join(a[:3])
+    return b

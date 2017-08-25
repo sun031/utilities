@@ -160,7 +160,6 @@ def proc_sac(file, xyfile, idn, scale):
     tr = read(file)[0]
     z = np.arange(tr.stats.npts) * tr.stats.delta
     d = tr.data
-
     d = d/max(abs(d))*scale + idn
 
     fp = open(xyfile, "w")
@@ -179,4 +178,40 @@ def read_vel(file, xyfile):
         dep = float(row[3])
         val = float(row[4])
         fp.write("%f\t%f\n" % (val, dep))
+    fp.close()
+
+def sac2xy(file, savepath, std=False, scale=10):
+    """
+    convert sac file to xy for gmt plot
+    :param file:
+    :return:
+    """
+
+    tr =  read(file)[0]
+
+    npts = tr.stats.npts
+    delta =  tr.stats.delta
+
+    # tr.data[:201] = 0.0
+    # x = tr.data
+    # std = np.std(x)
+    #
+    # print std, np.amax(x)
+    # a = np.where(abs(x)>scale*std)
+    # x[a] = np.sign(x[a])*scale*std
+    #
+    # y = x/max(abs(x))
+    tr.normalize()
+    y = tr.data
+
+    x = np.arange(0, npts)*delta
+
+    print file
+    bn = os.path.basename(file) + ".xy"
+    fn = "/".join([savepath, bn])
+
+    fp = open(fn, "w")
+    for i in range(len(x)):
+        # fp.write("%f\t%f\n" % (x[i], y[i]))
+        fp.write("%f\t%f\n" % (y[i], x[i]))
     fp.close()
